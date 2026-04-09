@@ -1,0 +1,23 @@
+{
+  "name": "pdm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:chromium": "npx playwright test --project=chromium",
+    "test:report": "npx allure generate allure-results --clean -o allure-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.5.2",
+    "allure-playwright": "^3.7.0"
+  },
+  "dependencies": {
+    "nodemailer": "^8.0.5"
+  }
+}
