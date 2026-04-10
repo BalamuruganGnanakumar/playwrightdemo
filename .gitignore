@@ -7,5 +7,9 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 
+# Allure - generated at runtime, not tracked in git
+/allure-results/
+/allure-report/
+
 # n8n workflow files (contain credentials - import into n8n manually)
 n8n-*.json
