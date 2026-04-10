@@ -6,3 +6,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# n8n workflow files (contain credentials - import into n8n manually)
+n8n-*.json
