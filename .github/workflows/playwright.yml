@@ -82,9 +82,4 @@ jobs:
           path: allure-report/
           retention-days: 7
 
-      - name: Notify n8n on test completion
-        if: always()
-        run: |
-          curl -s -X POST "${{ secrets.N8N_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"run_id\":\"${{ github.run_id }}\",\"conclusion\":\"${{ steps.run_tests.outcome }}\",\"repo\":\"BalamuruganGnanakumar/playwrightdemo\"}"
+
