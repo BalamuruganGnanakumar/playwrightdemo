@@ -2,6 +2,16 @@
   "name": "Playwright - Full Pipeline",
   "nodes": [
     {
+      "id": "sticky-001",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [250, 180],
+      "parameters": {
+        "content": "## ⚠️ Setup Required Before Running\n\n**`GH_PAT` must be set as an n8n Environment Variable.**\n\nGo to: **n8n Settings → Environment Variables** and add:\n- Key: `GH_PAT`\n- Value: your GitHub Personal Access Token\n\n### PAT Permissions Required\n- `repo` (full repo access)\n- `actions` (read & write)\n\n> **Note:** The GitHub repo secret named `GH_PAT` is a separate thing — it only works inside GitHub Actions YAML steps and is NOT accessible here in n8n. You must set `GH_PAT` in n8n's own environment."
+      }
+    },
+    {
       "id": "node-001",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
