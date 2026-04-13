@@ -31,8 +31,8 @@ test('Login with HMH Users with right credentials', async ({ page }) => {
   await expect(page).toHaveTitle('Log in | PDM WebApp');
 
   // Enter valid credentials and submit
-  await page.locator('#username').fill('dexcare.team@periscope-tech.com');
-  await page.locator('#password').fill('devtest@1234');
+  await page.locator('#username').fill(process.env.TEST_USERNAME || 'dexcare.team@periscope-tech.com');
+  await page.locator('#password').fill(process.env.TEST_PASSWORD || 'devtest@1234');
   await page.getByText('Continue', { exact: true }).click();
 
   // Verify successful login by checking the app title
@@ -65,7 +65,7 @@ test('Login with HMH Wrong Username', async ({ page }) => {
 
   // Enter an invalid username and a valid password, then submit
   await page.locator('#username').fill('wrong.username@periscope-tech.com');
-  await page.locator('#password').fill('devtest@1234');
+  await page.locator('#password').fill(process.env.TEST_PASSWORD || 'devtest@1234');
   await page.getByText('Continue', { exact: true }).click();
 
   // Verify that the error message is visible
@@ -96,7 +96,7 @@ test('Login with HMH Wrong password', async ({ page }) => {
   await expect(page).toHaveTitle('Log in | PDM WebApp');
 
   // Enter a valid username and an invalid password, then submit
-  await page.locator('#username').fill('dexcare.team@periscope-tech.com');
+  await page.locator('#username').fill(process.env.TEST_USERNAME || 'dexcare.team@periscope-tech.com');
   await page.locator('#password').fill('wrongpassword');
   await page.getByText('Continue', { exact: true }).click();
 

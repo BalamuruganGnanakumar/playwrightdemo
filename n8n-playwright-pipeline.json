@@ -1,0 +1,299 @@
+{
+  "name": "Playwright - Full Pipeline",
+  "nodes": [
+    {
+      "id": "node-001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 400],
+      "parameters": {}
+    },
+    {
+      "id": "node-000",
+      "name": "Get Pre-Trigger Run ID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [375, 400],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/BalamuruganGnanakumar/playwrightdemo/actions/workflows/playwright.yml/runs?per_page=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Accept", "value": "application/vnd.github.v3+json" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-002",
+      "name": "Trigger GitHub Actions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 400],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/BalamuruganGnanakumar/playwrightdemo/actions/workflows/playwright.yml/dispatches",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Accept", "value": "application/vnd.github.v3+json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"ref\": \"main\"}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "node-003",
+      "name": "Wait for Run to Start",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [750, 400],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 45,
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "node-004",
+      "name": "Get Latest Run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1000, 400],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.github.com/repos/BalamuruganGnanakumar/playwrightdemo/actions/workflows/playwright.yml/runs?per_page=1&event=workflow_dispatch",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Accept", "value": "application/vnd.github.v3+json" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-005",
+      "name": "Extract Run ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 400],
+      "parameters": {
+        "jsCode": "const preTriggerRuns = $('Get Pre-Trigger Run ID').first().json.workflow_runs || [];\nconst preTriggerRunId = preTriggerRuns.length > 0 ? preTriggerRuns[0].id : 0;\nconst runs = $input.first().json.workflow_runs;\nif (!runs || runs.length === 0) throw new Error('No workflow runs found. GitHub Actions may not have started yet.');\n// Only consider runs that were created AFTER we triggered the workflow\nconst newRuns = runs.filter(r => r.id > preTriggerRunId);\nif (newRuns.length === 0) {\n  throw new Error('New workflow run not registered yet. The 45-second wait may need to be extended.');\n}\nconst run = newRuns[0];\nreturn [{ json: { run_id: run.id, status: run.status, conclusion: run.conclusion } }];"
+      }
+    },
+    {
+      "id": "node-006",
+      "name": "Get Run Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1500, 400],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.github.com/repos/BalamuruganGnanakumar/playwrightdemo/actions/runs/' + $('Extract Run ID').first().json.run_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Accept", "value": "application/vnd.github.v3+json" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-007",
+      "name": "Is Run Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1750, 400],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "node-008",
+      "name": "Poll Wait 30s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1750, 620],
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "node-009",
+      "name": "Get Artifacts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2050, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.github.com/repos/BalamuruganGnanakumar/playwrightdemo/actions/runs/' + $('Extract Run ID').first().json.run_id + '/artifacts' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Accept", "value": "application/vnd.github.v3+json" }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "node-010",
+      "name": "Find Allure Artifact",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2300, 300],
+      "parameters": {
+        "jsCode": "const conclusion = $('Is Run Complete?').first().json.conclusion;\nconst runId = $('Extract Run ID').first().json.run_id;\nconst artifacts = $input.first().json.artifacts;\nconst allureArtifact = artifacts.find(a => a.name === 'allure-report');\nif (!allureArtifact) throw new Error('allure-report artifact not found in run ' + runId);\nreturn [{\n  json: {\n    artifact_download_url: allureArtifact.archive_download_url,\n    conclusion: conclusion || 'unknown',\n    run_id: runId\n  }\n}];"
+      }
+    },
+    {
+      "id": "node-011",
+      "name": "Download Allure ZIP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2550, 300],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.artifact_download_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          },
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "node-011b",
+      "name": "Set Report Filename",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2675, 300],
+      "parameters": {
+        "jsCode": "const runId = $('Find Allure Artifact').first().json.run_id;\nconst items = $input.all();\nreturn items.map(item => ({\n  json: item.json,\n  binary: {\n    data: {\n      ...item.binary.data,\n      fileName: `allure-report-run-${runId}.zip`,\n      mimeType: 'application/zip'\n    }\n  }\n}));"
+      }
+    },
+    {
+      "id": "node-012",
+      "name": "Send Report Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2800, 300],
+      "parameters": {
+        "fromEmail": "balamurugan.gnanakumar@periscope-tech.com",
+        "toEmail": "balamurugan.gnanakumar@periscope-tech.com",
+        "subject": "={{ 'Playwright Test Report - ' + $('Find Allure Artifact').first().json.conclusion.toUpperCase() + ' | Run #' + $('Find Allure Artifact').first().json.run_id }}",
+        "html": "=<h2>Playwright Test Execution Complete</h2><table style='border-collapse:collapse;font-family:sans-serif'><tr><td style='padding:6px 12px;font-weight:bold'>Status</td><td style='padding:6px 12px'>{{ $('Find Allure Artifact').first().json.conclusion.toUpperCase() }}</td></tr><tr><td style='padding:6px 12px;font-weight:bold'>Run ID</td><td style='padding:6px 12px'>{{ $('Find Allure Artifact').first().json.run_id }}</td></tr><tr><td style='padding:6px 12px;font-weight:bold'>Repo</td><td style='padding:6px 12px'>BalamuruganGnanakumar/playwrightdemo</td></tr></table><br><p>The Allure HTML report is attached as a ZIP file.</p><p><strong>How to view the report:</strong></p><ol><li>Extract the ZIP file to a local folder.</li><li>Open <strong>index.html</strong> directly in any browser — no web server required.</li></ol><p style='color:#666;font-size:12px'>The report is generated as a single self-contained HTML file with all test results, steps, and details embedded.</p>",
+        "attachmentsUi": {
+          "attachmentsBinary": [
+            { "property": "data" }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_WITH_YOUR_N8N_SMTP_CREDENTIAL_ID",
+          "name": "SMTP Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Get Pre-Trigger Run ID", "type": "main", "index": 0 }]]
+    },
+    "Get Pre-Trigger Run ID": {
+      "main": [[{ "node": "Trigger GitHub Actions", "type": "main", "index": 0 }]]
+    },
+    "Trigger GitHub Actions": {
+      "main": [[{ "node": "Wait for Run to Start", "type": "main", "index": 0 }]]
+    },
+    "Wait for Run to Start": {
+      "main": [[{ "node": "Get Latest Run", "type": "main", "index": 0 }]]
+    },
+    "Get Latest Run": {
+      "main": [[{ "node": "Extract Run ID", "type": "main", "index": 0 }]]
+    },
+    "Extract Run ID": {
+      "main": [[{ "node": "Get Run Status", "type": "main", "index": 0 }]]
+    },
+    "Get Run Status": {
+      "main": [[{ "node": "Is Run Complete?", "type": "main", "index": 0 }]]
+    },
+    "Is Run Complete?": {
+      "main": [
+        [{ "node": "Get Artifacts", "type": "main", "index": 0 }],
+        [{ "node": "Poll Wait 30s", "type": "main", "index": 0 }]
+      ]
+    },
+    "Poll Wait 30s": {
+      "main": [[{ "node": "Get Run Status", "type": "main", "index": 0 }]]
+    },
+    "Get Artifacts": {
+      "main": [[{ "node": "Find Allure Artifact", "type": "main", "index": 0 }]]
+    },
+    "Find Allure Artifact": {
+      "main": [[{ "node": "Download Allure ZIP", "type": "main", "index": 0 }]]
+    },
+    "Download Allure ZIP": {
+      "main": [[{ "node": "Set Report Filename", "type": "main", "index": 0 }]]
+    },
+    "Set Report Filename": {
+      "main": [[{ "node": "Send Report Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

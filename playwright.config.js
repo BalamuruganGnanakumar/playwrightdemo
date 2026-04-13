@@ -33,6 +33,11 @@ export default defineConfig({
   ],
   use: {
     trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'on-first-retry',
+    // Increase timeouts in CI to handle slower network and headless rendering
+    actionTimeout: process.env.CI ? 60000 : 30000,
+    navigationTimeout: process.env.CI ? 90000 : 30000,
     metadata: {
       owner: process.env.USER || 'QA Team',
       executionTime: new Date().toLocaleString(),

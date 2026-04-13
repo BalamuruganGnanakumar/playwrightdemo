@@ -41,14 +41,17 @@ jobs:
       - name: Run Playwright tests
         id: run_tests
         run: |
+          set +e
           if [ -n "${{ github.event.inputs.test_file }}" ]; then
             npx playwright test "${{ github.event.inputs.test_file }}" --project=${{ github.event.inputs.browser || 'chromium' }}
           else
             npx playwright test --project=${{ github.event.inputs.browser || 'chromium' }}
           fi
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
         env:
           CI: true
-        continue-on-error: true
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
 
       - name: Install Allure CLI
         if: always()
@@ -56,7 +59,12 @@ jobs:
 
       - name: Generate Allure HTML Report (single-file)
         if: always()
-        run: allure generate allure-results --clean --single-file -o allure-report
+        # continue-on-error ensures a missing/empty allure-results does not fail
+        # the workflow and block artifact upload + email notification
+        continue-on-error: true
+        run: |
+          mkdir -p allure-results
+          allure generate allure-results --clean --single-file -o allure-report
 
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
@@ -81,5 +89,13 @@ jobs:
           name: allure-report
           path: allure-report/
           retention-days: 7
+
+      - name: Fail job if tests failed
+        if: always()
+        run: |
+          if [ "${{ steps.run_tests.outputs.exit_code }}" != "0" ]; then
+            echo "::error::Playwright tests failed (exit code ${{ steps.run_tests.outputs.exit_code }}). Check the uploaded reports for details."
+            exit 1
+          fi
 
 

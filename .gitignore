@@ -11,5 +11,6 @@ node_modules/
 /allure-results/
 /allure-report/
 
-# n8n workflow files (contain credentials - import into n8n manually)
-n8n-*.json
+# n8n workflow files - credentials replaced with $env.GITHUB_PAT (safe to commit)
+# Remember to set GITHUB_PAT in n8n environment variables before importing
+# n8n-*.json
