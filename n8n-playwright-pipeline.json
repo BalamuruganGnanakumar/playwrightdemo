@@ -21,7 +21,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GH_PAT }}" },
             { "name": "Accept", "value": "application/vnd.github.v3+json" }
           ]
         },
@@ -40,7 +40,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GH_PAT }}" },
             { "name": "Accept", "value": "application/vnd.github.v3+json" }
           ]
         },
@@ -80,7 +80,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GH_PAT }}" },
             { "name": "Accept", "value": "application/vnd.github.v3+json" }
           ]
         },
@@ -109,7 +109,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GH_PAT }}" },
             { "name": "Accept", "value": "application/vnd.github.v3+json" }
           ]
         },
@@ -164,7 +164,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" },
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GH_PAT }}" },
             { "name": "Accept", "value": "application/vnd.github.v3+json" }
           ]
         },
@@ -193,7 +193,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GITHUB_PAT }}" }
+            { "name": "Authorization", "value": "={{ 'Bearer ' + $env.GH_PAT }}" }
           ]
         },
         "options": {
