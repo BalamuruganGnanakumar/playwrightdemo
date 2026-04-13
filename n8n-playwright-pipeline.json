@@ -224,12 +224,23 @@
     },
     {
       "id": "node-011b",
+      "name": "Extract Report HTML",
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1,
+      "position": [2675, 300],
+      "parameters": {
+        "operation": "decompress",
+        "binaryPropertyName": "data"
+      }
+    },
+    {
+      "id": "node-011c",
       "name": "Set Report Filename",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2675, 300],
+      "position": [2800, 300],
       "parameters": {
-        "jsCode": "const zlib = require('zlib');\nconst runId = $('Find Allure Artifact').first().json.run_id;\nconst item = $input.first();\nconst buf = Buffer.from(item.binary.data.data, 'base64');\n// Walk ZIP local file entries (signature PK\\x03\\x04 = 0x04034b50)\nlet offset = 0;\nlet htmlData = null;\nwhile (offset <= buf.length - 30) {\n  if (buf.readUInt32LE(offset) !== 0x04034b50) { offset++; continue; }\n  const method      = buf.readUInt16LE(offset + 8);\n  const compSize    = buf.readUInt32LE(offset + 18);\n  const fileNameLen = buf.readUInt16LE(offset + 26);\n  const extraLen    = buf.readUInt16LE(offset + 28);\n  const fileName    = buf.slice(offset + 30, offset + 30 + fileNameLen).toString('utf8');\n  const dataStart   = offset + 30 + fileNameLen + extraLen;\n  if (fileName.endsWith('.html')) {\n    const compressed = buf.slice(dataStart, dataStart + compSize);\n    htmlData = (method === 0) ? compressed : zlib.inflateRawSync(compressed);\n    break;\n  }\n  offset = dataStart + compSize;\n}\nif (!htmlData) throw new Error('No .html file found in the artifact ZIP');\nreturn [{\n  json: item.json,\n  binary: {\n    data: {\n      data: htmlData.toString('base64'),\n      mimeType: 'text/html',\n      fileType: 'html',\n      fileName: `allure-report-run-${runId}.html`,\n      fileExtension: 'html'\n    }\n  }\n}];"
+        "jsCode": "const runId = $('Find Allure Artifact').first().json.run_id;\nconst item = $input.first();\nconst binaryKeys = Object.keys(item.binary || {});\nconst htmlKey = binaryKeys.find(k => k.toLowerCase().endsWith('.html')) || binaryKeys[0];\nif (!htmlKey) throw new Error('No binary found after extraction. Available keys: ' + binaryKeys.join(', '));\nreturn [{\n  json: item.json,\n  binary: {\n    data: {\n      ...item.binary[htmlKey],\n      fileName: `allure-report-run-${runId}.html`,\n      mimeType: 'text/html',\n      fileExtension: 'html'\n    }\n  }\n}];"
       }
     },
     {
@@ -237,7 +248,7 @@
       "name": "Send Report Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
-      "position": [2800, 300],
+      "position": [2950, 300],
       "parameters": {
         "resource": "message",
         "operation": "send",
@@ -299,6 +310,9 @@
       "main": [[{ "node": "Download Allure ZIP", "type": "main", "index": 0 }]]
     },
     "Download Allure ZIP": {
+      "main": [[{ "node": "Extract Report HTML", "type": "main", "index": 0 }]]
+    },
+    "Extract Report HTML": {
       "main": [[{ "node": "Set Report Filename", "type": "main", "index": 0 }]]
     },
     "Set Report Filename": {
