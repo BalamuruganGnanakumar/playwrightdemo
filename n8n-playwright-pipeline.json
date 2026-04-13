@@ -235,25 +235,28 @@
     {
       "id": "node-012",
       "name": "Send Report Email",
-      "type": "n8n-nodes-base.emailSend",
+      "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [2800, 300],
       "parameters": {
-        "fromEmail": "balamurugan.gnanakumar@periscope-tech.com",
-        "toEmail": "balamurugan.gnanakumar@periscope-tech.com",
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "balamurugan.gnanakumar@periscope-tech.com",
         "subject": "={{ 'Playwright Test Report - ' + $('Find Allure Artifact').first().json.conclusion.toUpperCase() + ' | Run #' + $('Find Allure Artifact').first().json.run_id }}",
-        "html": "=<h2>Playwright Test Execution Complete</h2><table style='border-collapse:collapse;font-family:sans-serif'><tr><td style='padding:6px 12px;font-weight:bold'>Status</td><td style='padding:6px 12px'>{{ $('Find Allure Artifact').first().json.conclusion.toUpperCase() }}</td></tr><tr><td style='padding:6px 12px;font-weight:bold'>Run ID</td><td style='padding:6px 12px'>{{ $('Find Allure Artifact').first().json.run_id }}</td></tr><tr><td style='padding:6px 12px;font-weight:bold'>Repo</td><td style='padding:6px 12px'>BalamuruganGnanakumar/playwrightdemo</td></tr></table><br><p>The Allure HTML report is attached as a ZIP file.</p><p><strong>How to view the report:</strong></p><ol><li>Extract the ZIP file to a local folder.</li><li>Open <strong>index.html</strong> directly in any browser — no web server required.</li></ol><p style='color:#666;font-size:12px'>The report is generated as a single self-contained HTML file with all test results, steps, and details embedded.</p>",
-        "attachmentsUi": {
-          "attachmentsBinary": [
-            { "property": "data" }
-          ]
-        },
-        "options": {}
+        "emailType": "html",
+        "message": "=<h2>Playwright Test Execution Complete</h2><table style='border-collapse:collapse;font-family:sans-serif'><tr><td style='padding:6px 12px;font-weight:bold'>Status</td><td style='padding:6px 12px'>{{ $('Find Allure Artifact').first().json.conclusion.toUpperCase() }}</td></tr><tr><td style='padding:6px 12px;font-weight:bold'>Run ID</td><td style='padding:6px 12px'>{{ $('Find Allure Artifact').first().json.run_id }}</td></tr><tr><td style='padding:6px 12px;font-weight:bold'>Repo</td><td style='padding:6px 12px'>BalamuruganGnanakumar/playwrightdemo</td></tr></table><br><p>The Allure HTML report is attached as a ZIP file.</p><p><strong>How to view the report:</strong></p><ol><li>Extract the ZIP file to a local folder.</li><li>Open <strong>index.html</strong> directly in any browser — no web server required.</li></ol><p style='color:#666;font-size:12px'>The report is generated as a single self-contained HTML file with all test results, steps, and details embedded.</p>",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              { "property": "data" }
+            ]
+          }
+        }
       },
       "credentials": {
-        "smtp": {
-          "id": "REPLACE_WITH_YOUR_N8N_SMTP_CREDENTIAL_ID",
-          "name": "SMTP Account"
+        "gmailOAuth2": {
+          "id": "REPLACE_WITH_YOUR_N8N_GMAIL_CREDENTIAL_ID",
+          "name": "Gmail Account"
         }
       }
     }
