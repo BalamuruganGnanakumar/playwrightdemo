@@ -229,7 +229,7 @@
       "typeVersion": 2,
       "position": [2675, 300],
       "parameters": {
-        "jsCode": "const runId = $('Find Allure Artifact').first().json.run_id;\nconst items = $input.all();\nreturn items.map(item => ({\n  json: item.json,\n  binary: {\n    data: {\n      ...item.binary.data,\n      fileName: `allure-report-run-${runId}.zip`,\n      mimeType: 'application/zip'\n    }\n  }\n}));"
+        "jsCode": "const JSZip = require('jszip');\nconst runId = $('Find Allure Artifact').first().json.run_id;\nconst item = $input.first();\nconst zipBuffer = Buffer.from(item.binary.data.data, 'base64');\nconst zip = await JSZip.loadAsync(zipBuffer);\nconst files = Object.keys(zip.files).filter(f => !zip.files[f].dir);\nconst htmlFile = files.find(f => f.endsWith('index.html')) || files.find(f => f.endsWith('.html'));\nif (!htmlFile) throw new Error('No HTML file found in ZIP. Files available: ' + files.join(', '));\nconst htmlBase64 = await zip.files[htmlFile].async('base64');\nreturn [{\n  json: item.json,\n  binary: {\n    data: {\n      data: htmlBase64,\n      mimeType: 'text/html',\n      fileType: 'html',\n      fileName: `allure-report-run-${runId}.html`,\n      fileExtension: 'html'\n    }\n  }\n}];"
       }
     },
     {
