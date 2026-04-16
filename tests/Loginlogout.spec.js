@@ -7,6 +7,7 @@
 
 import { test, expect } from '@playwright/test';
 import * as allure from "allure-js-commons";
+import { getLocators } from '../objects/Loginlogout_loc.spec.js';
 
 /**
  * Test: Successful login with valid HMH credentials.
@@ -19,27 +20,29 @@ import * as allure from "allure-js-commons";
  *   6. Log out.
  */
 test('Login with HMH Users with right credentials', async ({ page }) => {
-  // Navigate to the departments page and verify the app title
+  const loc = getLocators(page);
+
+  // Navigate to the login page and verify the app title
   //await allure.severity('Major');
   await page.goto('https://pdm.care.spi-dev.dex.care/login');
   await expect(page).toHaveTitle('DexCare PDM');
 
   // Click the HMH login provider button
-  await page.locator("//button[normalize-space()='Continue with HMH Users']//*[name()='svg']").click();
+  await loc.hmhLoginBtn.click();
 
   // Verify redirect to the HMH login page
   await expect(page).toHaveTitle('Log in | PDM WebApp');
 
   // Enter valid credentials and submit
-  await page.locator('#username').fill(process.env.TEST_USERNAME || 'dexcare.team@periscope-tech.com');
-  await page.locator('#password').fill(process.env.TEST_PASSWORD || 'devtest@1234');
-  await page.getByText('Continue', { exact: true }).click();
+  await loc.usernameInput.fill(process.env.TEST_USERNAME || 'dexcare.team@periscope-tech.com');
+  await loc.passwordInput.fill(process.env.TEST_PASSWORD || 'devtest@1234');
+  await loc.continueBtn.click();
 
   // Verify successful login by checking the app title
   await expect(page).toHaveTitle('DexCare PDM');
 
   // Log out to clean up session
-  await page.getByText('Logout').click();
+  await loc.logoutBtn.click();
 });
 
 /**
@@ -52,24 +55,26 @@ test('Login with HMH Users with right credentials', async ({ page }) => {
  *   5. Verify that an error message is displayed.
  */
 test('Login with HMH Wrong Username', async ({ page }) => {
+  const loc = getLocators(page);
+
   //await allure.severity('Medium');
   // Navigate to the login page and verify the app title
   await page.goto('https://pdm.care.spi-dev.dex.care/login');
   await expect(page).toHaveTitle('DexCare PDM');
 
   // Click the HMH login provider button
-  await page.locator("//button[normalize-space()='Continue with HMH Users']//*[name()='svg']").click();
+  await loc.hmhLoginBtn.click();
 
   // Verify redirect to the HMH login page
   await expect(page).toHaveTitle('Log in | PDM WebApp');
 
   // Enter an invalid username and a valid password, then submit
-  await page.locator('#username').fill('wrong.username@periscope-tech.com');
-  await page.locator('#password').fill(process.env.TEST_PASSWORD || 'devtest@1234');
-  await page.getByText('Continue', { exact: true }).click();
+  await loc.usernameInput.fill('wrong.username@periscope-tech.com');
+  await loc.passwordInput.fill(process.env.TEST_PASSWORD || 'devtest@1234');
+  await loc.continueBtn.click();
 
   // Verify that the error message is visible
-  await expect(page.getByText('Wrong email or password')).toBeVisible();
+  await expect(loc.wrongCredentialsError).toBeVisible();
 
   await page.close();
 });
@@ -84,25 +89,26 @@ test('Login with HMH Wrong Username', async ({ page }) => {
  *   5. Verify that an error message is displayed.
  */
 test('Login with HMH Wrong password', async ({ page }) => {
+  const loc = getLocators(page);
+
   //await allure.severity('Minor');
   // Navigate to the login page and verify the app title
   await page.goto('https://pdm.care.spi-dev.dex.care/login');
   await expect(page).toHaveTitle('DexCare PDM');
 
   // Click the HMH login provider button
-  await page.locator("//button[normalize-space()='Continue with HMH Users']//*[name()='svg']").click();
+  await loc.hmhLoginBtn.click();
 
   // Verify redirect to the HMH login page
   await expect(page).toHaveTitle('Log in | PDM WebApp');
 
   // Enter a valid username and an invalid password, then submit
-  await page.locator('#username').fill(process.env.TEST_USERNAME || 'dexcare.team@periscope-tech.com');
-  await page.locator('#password').fill('wrongpassword');
-  await page.getByText('Continue', { exact: true }).click();
+  await loc.usernameInput.fill(process.env.TEST_USERNAME || 'dexcare.team@periscope-tech.com');
+  await loc.passwordInput.fill('wrongpassword');
+  await loc.continueBtn.click();
 
   // Verify that the error message is visible
-  await expect(page.getByText('Wrong email or password')).toBeVisible();
+  await expect(loc.wrongCredentialsError).toBeVisible();
 
   await page.close();
 });
-
